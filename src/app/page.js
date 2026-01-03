@@ -7,13 +7,15 @@ function SeatButton({ seat, isBooked, onClick }) {
   return (
     <button
       // 1. Explicitly disable the button so the browser respects the state
-      disabled={isBooked} 
+      disabled={isBooked}
       onClick={onClick}
       className={`
         aspect-square rounded-md border text-sm font-medium transition-colors
-        ${isBooked
-          ? "bg-red-500 text-white border-red-600 cursor-not-allowed opacity-90"
-          : "bg-green-500 text-white border-green-600 hover:bg-green-600 cursor-pointer"}
+        ${
+          isBooked
+            ? "bg-red-500 text-white border-red-600 cursor-not-allowed opacity-90"
+            : "bg-green-500 text-white border-green-600 hover:bg-green-600 cursor-pointer"
+        }
       `}
     >
       {seat}
@@ -58,7 +60,11 @@ export default function Home() {
     setPhone("");
   };
 
-  const confirmBooking = async () => {
+  const confirmBooking = async (e) => {
+    e.preventDefault(); // IMPORTANT: stop page reload
+
+    if (!name || !phone || loading) return;
+
     const res = await request({
       url: "/api/bookings",
       method: "POST",
@@ -112,7 +118,10 @@ export default function Home() {
       {/* ------------------ MODAL ------------------ */}
       {selectedSeat && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl transition-all">
+          <form
+            onSubmit={confirmBooking}
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl transition-all"
+          >
             <h2 className="mb-2 text-xl font-bold text-gray-900">
               Book Seat #{selectedSeat}
             </h2>
@@ -124,8 +133,8 @@ export default function Home() {
 
               {/* Group 1: Name */}
               <div>
-                <label 
-                  htmlFor="name" 
+                <label
+                  htmlFor="name"
                   className="block text-sm font-semibold text-gray-700"
                 >
                   Full Name
@@ -142,8 +151,8 @@ export default function Home() {
 
               {/* Group 2: Phone */}
               <div>
-                <label 
-                  htmlFor="phone" 
+                <label
+                  htmlFor="phone"
                   className="block text-sm font-semibold text-gray-700"
                 >
                   Phone Number
@@ -162,6 +171,7 @@ export default function Home() {
             {/* Actions */}
             <div className="mt-8 flex justify-end gap-3 pt-3">
               <button
+                type="button" // prevents accidental submit
                 onClick={closeModal}
                 className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
               >
@@ -169,14 +179,14 @@ export default function Home() {
               </button>
 
               <button
-                onClick={confirmBooking}
+                type="submit"
                 disabled={!name || !phone || loading}
                 className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? "Booking..." : "Confirm"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
